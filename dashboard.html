@@ -4,37 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Parrucchiere</title>
-    <!-- Aggiungi la libreria Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css">
+    <!-- Stili minimi per rendere la pagina funzionale -->
     <style>
-        /* Stili di base (se style.css non esiste) */
         body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         h1 { color: #333; }
         .card { background: #f9f9f9; border-left: 4px solid #007bff; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
         .btn-confirm { background: #25D366; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 8px; }
-        .btn-confirm:hover { background: #128C7E; }
-        .login-form { max-width: 300px; margin: 50px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .login-form input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        .login-form button { background: #007bff; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 20px; width: 100%; }
+        .login-form { max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .login-form input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .login-form button { background: #007bff; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; }
         .error { color: red; margin-top: 10px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div id="app"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Configurazione Supabase
         const SUPABASE_URL = 'https://oshrdpohkgathrpdwjxn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_nryMp4gt6YgNysZVN8rgnw_t68dnmPT';
         const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Credenziali predefinite per il parrucchiere (creare prima questo utente in Supabase Auth)
-        // Oppure modulo di login generico
-        async function mostraLogin() {
+        // --- Helper per cambiare la vista dell'app ---
+        function mostraLogin() {
             document.getElementById('app').innerHTML = `
                 <div class="login-form">
-                    <h3>Accesso Parrucchiere</h3>
+                    <h2>Accesso Parrucchiere</h2>
                     <input type="email" id="email" placeholder="Email" value="parrucchiere@example.com">
                     <input type="password" id="password" placeholder="Password">
                     <button id="loginBtn">Accedi</button>
@@ -54,6 +53,7 @@
         }
 
         async function caricaDashboard() {
+            // Ottieni la sessione corrente per il token
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 mostraLogin();
@@ -65,15 +65,16 @@
                 <div class="container">
                     <h1>📋 Richieste in attesa</h1>
                     <div id="listaPrenotazioni"></div>
-                    <button id="logoutBtn" style="margin-top:20px; background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Esci</button>
+                    <button id="logoutBtn" class="btn-logout">Esci</button>
                 </div>
             `;
-
+            
             document.getElementById('logoutBtn').onclick = async () => {
                 await supabase.auth.signOut();
                 mostraLogin();
             };
 
+            // Carica la lista delle prenotazioni
             async function caricaPrenotazioni() {
                 const url = `${SUPABASE_URL}/rest/v1/appuntamenti?stato=eq.in_attesa&order=data_ora.asc`;
                 const response = await fetch(url, {
@@ -102,6 +103,7 @@
                     `;
                     container.appendChild(card);
                 }
+                // Aggiunge l'evento per i pulsanti di conferma
                 document.querySelectorAll('.btn-confirm').forEach(btn => {
                     btn.addEventListener('click', async () => {
                         const id = btn.getAttribute('data-id');
@@ -120,12 +122,12 @@
                             if (result.waLink) {
                                 window.open(result.waLink, '_blank');
                                 alert('Messaggio WhatsApp preparato. Invia al cliente.');
-                                caricaPrenotazioni();
+                                caricaPrenotazioni(); // Ricarica la lista
                             } else {
                                 alert('Errore: ' + (result.error || 'Riprova'));
                             }
                         } catch (err) {
-                            alert('Errore di rete o funzione non disponibile: ' + err.message);
+                            alert('Errore di rete: ' + err.message);
                         }
                     });
                 });
@@ -133,7 +135,7 @@
             caricaPrenotazioni();
         }
 
-        // Avvio: verifica sessione esistente
+        // Avvio dell'applicazione
         window.onload = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
