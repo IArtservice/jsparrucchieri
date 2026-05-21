@@ -19,10 +19,10 @@
             throw new Error("Non autorizzato");
         }
 
-        // ===== CONFIGURAZIONE =====
-        const SUPABASE_URL = 'https://nryMp4gt6YgNysZVN8rgnw.supabase.co';
+        // ===== CONFIGURAZIONE CORRETTA =====
+        const SUPABASE_URL = 'https://oshrdpohkgathrpdwjxn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_nryMp4gt6YgNysZVN8rgnw_t68dnmPT';
-        // ==========================
+        // ==================================
 
         async function caricaPrenotazioni() {
             const response = await fetch(`${SUPABASE_URL}/rest/v1/parrucchiere/appuntamenti?stato=eq.in_attesa&order=data_ora.asc`, {

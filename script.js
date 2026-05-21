@@ -1,7 +1,7 @@
-// ===== CONFIGURAZIONE =====
-const SUPABASE_URL = 'https://nryMp4gt6YgNysZVN8rgnw.supabase.co';
+// ===== CONFIGURAZIONE CORRETTA =====
+const SUPABASE_URL = 'https://oshrdpohkgathrpdwjxn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_nryMp4gt6YgNysZVN8rgnw_t68dnmPT';
-// ==========================
+// ==================================
 
 function populateHours() {
     const select = document.getElementById('ora');
