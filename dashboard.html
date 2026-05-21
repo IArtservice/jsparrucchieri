@@ -12,20 +12,18 @@
         <div id="listaPrenotazioni"></div>
     </div>
     <script>
-        // PROTEZIONE SEMPLICE – cambia la password
         const pwd = prompt("Inserisci la password del parrucchiere:");
         if (pwd !== "parrucchiere2025") {
             document.body.innerHTML = "<h1>Accesso negato</h1>";
             throw new Error("Non autorizzato");
         }
 
-        // ===== CONFIGURAZIONE CORRETTA =====
         const SUPABASE_URL = 'https://oshrdpohkgathrpdwjxn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_nryMp4gt6YgNysZVN8rgnw_t68dnmPT';
-        // ==================================
 
         async function caricaPrenotazioni() {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/parrucchiere/appuntamenti?stato=eq.in_attesa&order=data_ora.asc`, {
+            const url = `${SUPABASE_URL}/rest/v1/appuntamenti?stato=eq.in_attesa&order=data_ora.asc`;
+            const response = await fetch(url, {
                 headers: {
                     'apikey': SUPABASE_ANON_KEY,
                     'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
@@ -70,7 +68,7 @@
                         alert('Messaggio WhatsApp preparato. Invia al cliente.');
                         caricaPrenotazioni();
                     } else {
-                        alert('Errore nella conferma: ' + (result.error || 'riprova'));
+                        alert('Errore: ' + (result.error || 'riprova'));
                     }
                 });
             });

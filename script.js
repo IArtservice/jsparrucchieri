@@ -1,7 +1,5 @@
-// ===== CONFIGURAZIONE CORRETTA =====
 const SUPABASE_URL = 'https://oshrdpohkgathrpdwjxn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_nryMp4gt6YgNysZVN8rgnw_t68dnmPT';
-// ==================================
 
 function populateHours() {
     const select = document.getElementById('ora');
@@ -24,7 +22,7 @@ document.getElementById('prenotazioneForm').addEventListener('submit', async (e)
     const data_ora = new Date(`${data}T${ora}:00`).toISOString();
 
     try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/parrucchiere/appuntamenti`, {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/appuntamenti`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
