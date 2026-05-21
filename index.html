@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prenota dal Parrucchiere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>✂️ Prenota il tuo appuntamento</h1>
+        <form id="prenotazioneForm">
+            <input type="text" id="nome" placeholder="Nome e cognome" required>
+            <input type="tel" id="telefono" placeholder="Numero WhatsApp (es. 393331234567)" required>
+            <select id="servizio" required>
+                <option value="Taglio uomo">Taglio uomo - €20</option>
+                <option value="Taglio donna">Taglio donna - €35</option>
+                <option value="Colore">Colore - €60</option>
+                <option value="Piega">Piega - €25</option>
+            </select>
+            <input type="date" id="data" required>
+            <select id="ora" required></select>
+            <button type="submit">Invia richiesta</button>
+        </form>
+        <div id="messaggio"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

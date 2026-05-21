@@ -1,0 +1,52 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9f5f0;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 32px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+h1 {
+    color: #b87c4f;
+    text-align: center;
+}
+input, select, button {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 60px;
+    border: 1px solid #e0d6cc;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+button {
+    background: #b87c4f;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+button:hover {
+    background: #a0673f;
+}
+.card {
+    background: #fffaf5;
+    border-radius: 24px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid #f0e2d4;
+}
+.btn-confirm {
+    background: #25D366;
+    margin-top: 10px;
+}
+.btn-confirm:hover {
+    background: #1da15a;
+}
