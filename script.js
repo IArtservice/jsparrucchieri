@@ -3,11 +3,10 @@ const SUPABASE_URL = 'https://nryMp4gt6YgNysZVN8rgnw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_nryMp4gt6YgNysZVN8rgnw_t68dnmPT';
 // ==========================
 
-// Popola le ore disponibili (dalle 9:00 alle 19:30, pausa 13:00-14:00)
 function populateHours() {
     const select = document.getElementById('ora');
     for (let h = 9; h <= 19; h++) {
-        if (h === 13) continue; // pausa pranzo
+        if (h === 13) continue;
         const hourStr = h.toString().padStart(2, '0');
         select.innerHTML += `<option value="${hourStr}:00">${hourStr}:00</option>`;
         if (h !== 19) select.innerHTML += `<option value="${hourStr}:30">${hourStr}:30</option>`;
