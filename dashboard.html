@@ -4,76 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Parrucchiere</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .card { background: #f9f9f9; border-left: 4px solid #007bff; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .btn-confirm { background: #25D366; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 8px; }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; margin-top: 20px; width: 100%; }
+        .login-form { max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .login-form input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .login-form button { background: #007bff; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; }
+        .error { color: red; margin-top: 10px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📋 Richieste in attesa</h1>
-        <div id="listaPrenotazioni"></div>
-    </div>
+    <div id="app"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const pwd = prompt("Inserisci la password del parrucchiere:");
-        if (pwd !== "parrucchiere2025") {
-            document.body.innerHTML = "<h1>Accesso negato</h1>";
-            throw new Error("Non autorizzato");
-        }
-
         const SUPABASE_URL = 'https://oshrdpohkgathrpdwjxn.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_nryMp4gt6YgNysZVN8rgnw_t68dnmPT';
+        const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function caricaPrenotazioni() {
-            const url = `${SUPABASE_URL}/rest/v1/appuntamenti?stato=eq.in_attesa&order=data_ora.asc`;
-            const response = await fetch(url, {
-                headers: {
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        async function mostraLogin() {
+            document.getElementById('app').innerHTML = `
+                <div class="login-form">
+                    <h2>Accesso Parrucchiere</h2>
+                    <input type="email" id="email" placeholder="Email" value="parrucchiere@example.com">
+                    <input type="password" id="password" placeholder="Password">
+                    <button id="loginBtn">Accedi</button>
+                    <div id="loginError" class="error"></div>
+                </div>
+            `;
+            document.getElementById('loginBtn').onclick = async () => {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    document.getElementById('loginError').innerText = error.message;
+                } else {
+                    caricaDashboard();
                 }
-            });
-            const prenotazioni = await response.json();
-            const container = document.getElementById('listaPrenotazioni');
-            if (prenotazioni.length === 0) {
-                container.innerHTML = '<p>Nessuna prenotazione in attesa.</p>';
+            };
+        }
+
+        async function caricaDashboard() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                mostraLogin();
                 return;
             }
-            container.innerHTML = '';
-            for (let p of prenotazioni) {
-                const data = new Date(p.data_ora);
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <strong>${p.nome}</strong><br>
-                    Tel: ${p.telefono}<br>
-                    Servizio: ${p.servizio}<br>
-                    Data: ${data.toLocaleDateString()} ore ${data.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}<br>
-                    <button class="btn-confirm" data-id="${p.id}">✅ Conferma via WhatsApp</button>
-                `;
-                container.appendChild(card);
-            }
-            document.querySelectorAll('.btn-confirm').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.getAttribute('data-id');
-                    const functionUrl = `${SUPABASE_URL}/functions/v1/conferma-parrucchiere`;
-                    const response = await fetch(functionUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                        },
-                        body: JSON.stringify({ appointmentId: id })
-                    });
-                    const result = await response.json();
-                    if (result.waLink) {
-                        window.open(result.waLink, '_blank');
-                        alert('Messaggio WhatsApp preparato. Invia al cliente.');
-                        caricaPrenotazioni();
-                    } else {
-                        alert('Errore: ' + (result.error || 'riprova'));
+            const token = session.access_token;
+            document.getElementById('app').innerHTML = `
+                <div class="container">
+                    <h1>📋 Richieste in attesa</h1>
+                    <div id="listaPrenotazioni"></div>
+                    <button id="logoutBtn" class="btn-logout">Esci</button>
+                </div>
+            `;
+            document.getElementById('logoutBtn').onclick = async () => {
+                await supabase.auth.signOut();
+                mostraLogin();
+            };
+
+            async function caricaPrenotazioni() {
+                const url = `${SUPABASE_URL}/rest/v1/appuntamenti?stato=eq.in_attesa&order=data_ora.asc`;
+                const response = await fetch(url, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${token}`
                     }
                 });
-            });
+                if (!response.ok) {
+                    console.error('Errore caricamento:', response.status);
+                    document.getElementById('listaPrenotazioni').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
+                    return;
+                }
+                const prenotazioni = await response.json();
+                const container = document.getElementById('listaPrenotazioni');
+                if (!prenotazioni.length) {
+                    container.innerHTML = '<p>Nessuna prenotazione in attesa.</p>';
+                    return;
+                }
+                container.innerHTML = '';
+                for (let p of prenotazioni) {
+                    const data = new Date(p.data_ora);
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <strong>${p.nome}</strong><br>
+                        Tel: ${p.telefono}<br>
+                        Servizio: ${p.servizio}<br>
+                        Data: ${data.toLocaleDateString()} ore ${data.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}<br>
+                        <button class="btn-confirm" data-id="${p.id}">✅ Conferma via WhatsApp</button>
+                    `;
+                    container.appendChild(card);
+                }
+                document.querySelectorAll('.btn-confirm').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.getAttribute('data-id');
+                        const functionUrl = `${SUPABASE_URL}/functions/v1/conferma-parrucchiere`;
+                        try {
+                            const res = await fetch(functionUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'apikey': SUPABASE_ANON_KEY,
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ appointmentId: id })
+                            });
+                            const result = await res.json();
+                            if (result.waLink) {
+                                window.open(result.waLink, '_blank');
+                                alert('Messaggio WhatsApp preparato. Invia al cliente.');
+                                caricaPrenotazioni();
+                            } else {
+                                alert('Errore: ' + (result.error || 'Riprova'));
+                            }
+                        } catch (err) {
+                            alert('Errore di rete: ' + err.message);
+                        }
+                    });
+                });
+            }
+            caricaPrenotazioni();
         }
-        caricaPrenotazioni();
+
+        window.onload = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                caricaDashboard();
+            } else {
+                mostraLogin();
+            }
+        };
     </script>
 </body>
 </html>
